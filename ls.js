@@ -3,19 +3,33 @@
 
 var mockfs = require('mockfs/js/mockfs');
 
-module.exports = listFileTypes;
+module.exports = list;
 
-// path:
-// done: callback function(err, files)
 var DIRECTORY = 'directory';
 var FILE = 'file';
 var UNKNOWN = 'unknown';
 var ERROR = 'error';
 
-
 var TIMEOUT = 500;
 
-function listFileTypes(path, done){
+/*
+  path: path to list
+  done: callback function with two arguments: [err] and [files] (function(err, files){ ... }).
+        [files] is an object representing the tree structure of the [path] param. When [path]
+        is invalid or system error encountered when  listing the [path], [err] will be set. Note
+        that the function will ignore error from child files or directories.
+
+  example of [files]:
+    {
+      "a": "file",
+      "b": {
+        "aa": "file",
+        "bb": "error: Filesystem error",
+        "cc": "file"
+      }
+    }
+*/
+function list(path, done){
   recursiveList(path, function(pathMapFiles){
     var rootError = pathMapFiles[path];
     if(!(rootError instanceof Array)) return done(rootError);
@@ -33,6 +47,14 @@ function listFileTypes(path, done){
   });
 }
 
+/*
+  get or create entry based on path.
+
+  Example:
+    var rootEntry = {};
+    getOrCreateEntry(rootEntry, '/a/b', '/a/b/c/d');
+    console.log(rootEntry); //=> { 'c': { 'd': {} } }
+*/
 
 function getOrCreateEntry(rootEntry, root, path){
   if(root === path) return rootEntry;
@@ -48,29 +70,30 @@ function getOrCreateEntry(rootEntry, root, path){
   return entry;
 }
 
-// path:
-// done: callback function(pathMapFiles)
-// Example:
 /*
-{ '/':
-   [ { name: 'e', type: 'file', path: '/e', err: null },
-     { name: 'a', type: 'file', path: '/a', err: null },
-     { name: 'g', type: 'file', path: '/g', err: null },
-     { name: 'c', type: 'file', path: '/c', err: null } ],
-  '/d': [],
-  '/b':
-   [ { name: 'aa', type: 'file', path: '/b/aa', err: null },
-     { name: 'bb',
-       type: 'error',
-       path: '/b/bb',
-       err: 'Filesystem error' },
-     { name: 'cc', type: 'file', path: '/b/cc', err: null } ],
-  '/d/dd': [],
-  '/f':
-   [ { name: 'ee', type: 'unknown', path: '/f/ee', err: null },
-     { name: 'ff', type: 'error', path: '/f/ff', err: 'stat timeout' } ],
-  '/f/gg': [],
-  '/f/gg/hhh': [ { name: 'iiii', type: 'file', path: '/f/gg/hhh/iiii', err: null } ] }
+  path:
+  done: callback function(pathMapFiles)
+
+  example of [pathMapFiles]:
+  { '/':
+     [ { name: 'e', type: 'file', path: '/e', err: null },
+       { name: 'a', type: 'file', path: '/a', err: null },
+       { name: 'g', type: 'file', path: '/g', err: null },
+       { name: 'c', type: 'file', path: '/c', err: null } ],
+    '/d': [],
+    '/b':
+     [ { name: 'aa', type: 'file', path: '/b/aa', err: null },
+       { name: 'bb',
+         type: 'error',
+         path: '/b/bb',
+         err: 'Filesystem error' },
+       { name: 'cc', type: 'file', path: '/b/cc', err: null } ],
+    '/d/dd': [],
+    '/f':
+     [ { name: 'ee', type: 'unknown', path: '/f/ee', err: null },
+       { name: 'ff', type: 'error', path: '/f/ff', err: 'stat timeout' } ],
+    '/f/gg': [],
+    '/f/gg/hhh': [ { name: 'iiii', type: 'file', path: '/f/gg/hhh/iiii', err: null } ] }
 */
 function recursiveList(path, done, sharedInfo){
   sharedInfo = sharedInfo || {pathMapFiles: {}, waitCount: 0};
