@@ -1,0 +1,14 @@
+{
+  "name": "MockFsAsync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "node tests/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mockfs": "git://github.com/joelrbrandt/mockfs.git"
+  }
+}
