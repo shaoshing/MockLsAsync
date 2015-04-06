@@ -3,7 +3,7 @@
 
 var mockfs = require('mockfs/js/mockfs');
 
-module.exports = list;
+module.exports = ls;
 
 var DIRECTORY = 'directory';
 var FILE = 'file';
@@ -29,7 +29,7 @@ var TIMEOUT = 500;
       }
     }
 */
-function list(path, done){
+function ls(path, done){
   recursiveList(path, function(pathMapFiles){
     var rootError = pathMapFiles[path];
     if(!(rootError instanceof Array)) return done(rootError);
